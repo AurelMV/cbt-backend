@@ -1,44 +1,60 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, APIRouter
+from fastapi.middleware.cors import CORSMiddleware
 from api.v1.routes import (
-	auth,
-	users,
-	ciclos,
-	grupos,
-	clases,
-	departamentos,
-	provincias,
-	distritos,
-	colegios,
-	programas,
-	preinscripciones,
-	prepagos,
-	alumnos,
-	inscripciones,
-	pagos,
+    auth,
+    users,
+    ciclos,
+    grupos,
+    clases,
+    departamentos,
+    provincias,
+    distritos,
+    colegios,
+    programas,
+    preinscripciones,
+    prepagos,
+    alumnos,
+    inscripciones,
+    pagos,
 )
 from db.base import init_db
+from core.config import settings
 
 app = FastAPI(title="CBT Backend API", version="1.0.0")
+
+# CORS configuration
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=settings.CORS_ORIGINS,
+    allow_credentials=settings.CORS_ALLOW_CREDENTIALS,
+    allow_methods=settings.CORS_ALLOW_METHODS,
+    allow_headers=settings.CORS_ALLOW_HEADERS,
+)
 
 
 @app.on_event("startup")
 def on_startup():
-	# Ensure tables exist for newly added models in dev environments
-	init_db()
+    # Ensure tables exist for newly added models in dev environments
+    init_db()
 
 
-app.include_router(auth.router)
-app.include_router(users.router)
-app.include_router(ciclos.router)
-app.include_router(grupos.router)
-app.include_router(clases.router)
-app.include_router(departamentos.router)
-app.include_router(provincias.router)
-app.include_router(distritos.router)
-app.include_router(colegios.router)
-app.include_router(programas.router)
-app.include_router(preinscripciones.router)
-app.include_router(prepagos.router)
-app.include_router(alumnos.router)
-app.include_router(inscripciones.router)
-app.include_router(pagos.router)
+api_router = APIRouter(prefix="/api")
+
+api_router.include_router(auth.router)
+api_router.include_router(users.router)
+api_router.include_router(ciclos.router)
+api_router.include_router(grupos.router)
+api_router.include_router(clases.router)
+api_router.include_router(departamentos.router)
+api_router.include_router(provincias.router)
+api_router.include_router(distritos.router)
+api_router.include_router(colegios.router)
+api_router.include_router(programas.router)
+api_router.include_router(preinscripciones.router)
+api_router.include_router(prepagos.router)
+api_router.include_router(alumnos.router)
+api_router.include_router(inscripciones.router)
+api_router.include_router(pagos.router)
+
+app.include_router(api_router)
