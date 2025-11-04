@@ -18,12 +18,11 @@ from api.v1.routes import (
     pagos,
 )
 from db.base import init_db
-from core.config import Config
+from core.config import settings
 
 app = FastAPI(title="CBT Backend API", version="1.0.0")
 
 # CORS configuration
-settings = Config()
 
 app.add_middleware(
     CORSMiddleware,
