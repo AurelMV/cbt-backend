@@ -25,3 +25,14 @@ class InscripcionRead(InscripcionBase):
     model_config = {
         "from_attributes": True
     }
+
+
+class InscripcionLookupRead(BaseModel):
+    """DTO para devolver datos mínimos al buscar por DNI + ciclo."""
+    idInscripcion: int
+    idAlumno: int
+    idCiclo: int
+    nombreAlumno: str
+    aPaterno: str
+    aMaterno: str
+    Codigo: str | None = None

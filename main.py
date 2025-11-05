@@ -16,6 +16,7 @@ from api.v1.routes import (
     alumnos,
     inscripciones,
     pagos,
+    bandeja,
 )
 from db.base import init_db
 from core.config import settings
@@ -24,10 +25,17 @@ app = FastAPI(title="CBT Backend API", version="1.0.0")
 
 # CORS configuration
 
+# Permitir todos los orígenes por defecto si no se configuró CORS_ORIGINS en .env
+_allow_origins = settings.CORS_ORIGINS or ["*"]
+# La combinación "*" + credentials=True no es válida según el estándar; si se usa "*", forzamos credentials=False
+_allow_credentials = (
+    settings.CORS_ALLOW_CREDENTIALS and _allow_origins != ["*"]
+)
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.CORS_ORIGINS,
-    allow_credentials=settings.CORS_ALLOW_CREDENTIALS,
+    allow_origins=_allow_origins,
+    allow_credentials=_allow_credentials,
     allow_methods=settings.CORS_ALLOW_METHODS,
     allow_headers=settings.CORS_ALLOW_HEADERS,
 )
@@ -56,5 +64,6 @@ api_router.include_router(prepagos.router)
 api_router.include_router(alumnos.router)
 api_router.include_router(inscripciones.router)
 api_router.include_router(pagos.router)
+api_router.include_router(bandeja.router)
 
 app.include_router(api_router)

@@ -18,6 +18,7 @@ class PreInscripcion(SQLModel, table=True):
     anoCulminado: int
     Direccion: str
     nroDocumento: str
+    estado: str = Field(default="pendiente")
 
     # Relaciones con tablas existentes
     idColegio: int = Field(foreign_key="colegio.id")
@@ -36,5 +37,6 @@ class PrePago(SQLModel, table=True):
     idInscripcion: int = Field(foreign_key="preinscripcion.id")
     foto: str | None = None
     TipoPago: str
+    estado: str = Field(default="pendiente")
 
     preinscripcion: Optional[PreInscripcion] = Relationship(back_populates="pagos")

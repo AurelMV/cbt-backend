@@ -17,3 +17,8 @@ def create(session: Session, alumno: Alumno) -> Alumno:
 
 def get(session: Session, alumno_id: int) -> Optional[Alumno]:
     return session.get(Alumno, alumno_id)
+
+
+def get_by_dni(session: Session, dni: str) -> Optional[Alumno]:
+    """Return the first Alumno matching the given DNI (nroDocumento)."""
+    return session.exec(select(Alumno).where(Alumno.nroDocumento == dni)).first()

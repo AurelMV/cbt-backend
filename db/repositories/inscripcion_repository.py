@@ -17,3 +17,11 @@ def create(session: Session, inscripcion: Inscripcion) -> Inscripcion:
 
 def get(session: Session, inscripcion_id: int) -> Optional[Inscripcion]:
     return session.get(Inscripcion, inscripcion_id)
+
+
+def get_by_alumno_and_ciclo(session: Session, alumno_id: int, ciclo_id: int) -> Optional[Inscripcion]:
+    """Return the first Inscripcion for a given alumno and ciclo."""
+    stmt = select(Inscripcion).where(
+        (Inscripcion.idAlumno == alumno_id) & (Inscripcion.idCiclo == ciclo_id)
+    )
+    return session.exec(stmt).first()
