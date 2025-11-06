@@ -54,6 +54,6 @@ class Pago(SQLModel, table=True):
     fecha: date
     idInscripcion: int = Field(foreign_key="inscripcion.id")
     foto: str | None = None
-    Estado: bool = Field(default=True)
+    Estado: bool = Field(default=False)
 
     inscripcion: Optional["Inscripcion"] = Relationship(back_populates="pagos")

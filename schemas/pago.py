@@ -9,7 +9,7 @@ class PagoBase(BaseModel):
     fecha: date
     idInscripcion: int
     foto: str | None = None
-    Estado: bool = True
+    Estado: bool = False
 
 
 class PagoCreate(PagoBase):
@@ -19,6 +19,4 @@ class PagoCreate(PagoBase):
 class PagoRead(PagoBase):
     id: int
 
-    model_config = {
-        "from_attributes": True
-    }
+    model_config = {"from_attributes": True}
