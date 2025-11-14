@@ -56,6 +56,17 @@ Notas de uso:
 - Si `total` es 0, `pages` es 0.
 - Los endpoints que soportan paginación también aceptan `q` para búsqueda simple según el módulo.
 
+- Token: respuesta de autenticación.
+
+  - `access_token`: string (JWT)
+  - `token_type`: "bearer"
+
+- Error: formato de error estándar FastAPI.
+  - HTTPException: `{ "detail": string }`
+  - ValidationError: `{ "detail": [ { "loc": [..], "msg": string, "type": string } ] }`
+
+---
+
 ## Users
 
 - Base: `/api/users`
