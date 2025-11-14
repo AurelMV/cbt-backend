@@ -16,11 +16,17 @@ def get_alumnos(
     session: Session = Depends(get_session),
     offset: int = Query(0, ge=0, description="Desplazamiento para paginación"),
     limit: int = Query(15, ge=1, le=100, description="Límite de resultados"),
+    page: int | None = Query(
+        None,
+        ge=0,
+        description="Número de página (0-based). Si se envía, ignora offset",
+    ),
     q: str | None = Query(
         None, description="Búsqueda por nombre, apellidos, DNI o email"
     ),
 ):
-    return list_filtered_paginated(session, q=q, offset=offset, limit=limit)
+    effective_offset = offset if page is None else page * limit
+    return list_filtered_paginated(session, q=q, offset=effective_offset, limit=limit)
 
 
 @router.post("/", response_model=AlumnoRead, status_code=status.HTTP_201_CREATED)

@@ -64,12 +64,14 @@ def list_filtered_paginated(
     items = session.exec(base_query.offset(max(0, offset)).limit(max(1, limit))).all()
     total = session.exec(count_query).one()
     pages = math.ceil(total / limit) if total else 0
+    page = offset // limit if limit > 0 else 0
     return {
         "items": items,
         "total": total,
         "pages": pages,
         "limit": limit,
         "offset": offset,
+        "page": page,
     }
 
 

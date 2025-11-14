@@ -242,6 +242,7 @@ Esquemas (PrePago):
   - Query params:
     - `offset` (int, default 0, >=0): desplazamiento
     - `limit` (int, default 15, 1..100): tamaño de página
+      - `page` (int, opcional, >=0): número de página (0-based). Si se envía, ignora `offset` y se calcula `offset = page * limit`.
     - `q` (string, opcional): busca por nombre, apellidos, DNI o email
   - Respuesta 200 (AlumnosPage):
     - `items`: lista de AlumnoRead
@@ -249,6 +250,7 @@ Esquemas (PrePago):
     - `pages`: total de páginas (ceil(total/limit))
     - `limit`: límite usado
     - `offset`: offset usado
+      - `page`: página actual (0-based)
 - `POST /api/alumnos/` → crea con AlumnoCreate (requiere `idColegio` válido)
 
 Esquemas (Alumno):

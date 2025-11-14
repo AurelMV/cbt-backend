@@ -33,3 +33,4 @@ class AlumnosPage(BaseModel):
     pages: int
     limit: int
     offset: int
+    page: int
