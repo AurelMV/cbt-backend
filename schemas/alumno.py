@@ -1,5 +1,4 @@
 from datetime import date
-from typing import Optional
 from pydantic import BaseModel, EmailStr
 
 
@@ -25,6 +24,12 @@ class AlumnoCreate(AlumnoBase):
 class AlumnoRead(AlumnoBase):
     id: int
 
-    model_config = {
-        "from_attributes": True
-    }
+    model_config = {"from_attributes": True}
+
+
+class AlumnosPage(BaseModel):
+    items: list[AlumnoRead]
+    total: int
+    pages: int
+    limit: int
+    offset: int

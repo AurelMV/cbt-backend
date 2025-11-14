@@ -238,11 +238,17 @@ Esquemas (PrePago):
 ## Alumnos
 
 - Base: `/api/alumnos`
-- `GET /api/alumnos/` → lista AlumnoRead con paginación y filtros
+- `GET /api/alumnos/` → página de alumnos con metadatos
   - Query params:
     - `offset` (int, default 0, >=0): desplazamiento
-    - `limit` (int, default 50, 1..100): tamaño de página
+    - `limit` (int, default 15, 1..100): tamaño de página
     - `q` (string, opcional): busca por nombre, apellidos, DNI o email
+  - Respuesta 200 (AlumnosPage):
+    - `items`: lista de AlumnoRead
+    - `total`: total de registros que cumplen el filtro
+    - `pages`: total de páginas (ceil(total/limit))
+    - `limit`: límite usado
+    - `offset`: offset usado
 - `POST /api/alumnos/` → crea con AlumnoCreate (requiere `idColegio` válido)
 
 Esquemas (Alumno):
@@ -367,6 +373,6 @@ curl -X GET "http://localhost:8000/api/ciclos/" -H "accept: application/json"
 ## Notas finales
 
 - CORS: permitido según `core.config.Config` (CORS_ORIGINS, etc.). Ajusta `.env` para tu frontend.
-- Paginación: los listados actuales devuelven todo. Si necesitas paginación, podemos añadir `offset`/`limit` a cada recurso.
+- Paginación: `alumnos` soporta `offset`, `limit` y devuelve metadatos (`total`, `pages`). El resto de listados aún devuelven todo; si necesitas paginación en otros recursos, podemos añadirla.
 - Errores: las validaciones de FK devuelven 400; recursos inexistentes devuelven 404; autenticación insuficiente 401/403 según el caso.
 - OpenAPI/Swagger: `http://localhost:8000/docs` o JSON en `/openapi.json`.
