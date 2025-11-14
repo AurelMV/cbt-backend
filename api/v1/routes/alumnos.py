@@ -1,10 +1,10 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlmodel import Session
 
 from db.base import get_session
 from db.models.enrollment import Alumno as AlumnoModel
 from db.repositories import colegio_repository
-from db.repositories.alumno_repository import list_all, create
+from db.repositories.alumno_repository import list_all, list_filtered, create
 from schemas.alumno import AlumnoCreate, AlumnoRead
 
 
@@ -12,8 +12,17 @@ router = APIRouter(prefix="/alumnos", tags=["alumnos"])
 
 
 @router.get("/", response_model=list[AlumnoRead])
-def get_alumnos(session: Session = Depends(get_session)):
-    return list_all(session)
+def get_alumnos(
+    session: Session = Depends(get_session),
+    offset: int = Query(0, ge=0, description="Desplazamiento para paginación"),
+    limit: int = Query(50, ge=1, le=100, description="Límite de resultados"),
+    q: str | None = Query(
+        None, description="Búsqueda por nombre, apellidos, DNI o email"
+    ),
+):
+    if q is None and offset == 0 and limit == 50:
+        return list_all(session)
+    return list_filtered(session, q=q, offset=offset, limit=limit)
 
 
 @router.post("/", response_model=AlumnoRead, status_code=status.HTTP_201_CREATED)

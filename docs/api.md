@@ -238,7 +238,11 @@ Esquemas (PrePago):
 ## Alumnos
 
 - Base: `/api/alumnos`
-- `GET /api/alumnos/` → lista AlumnoRead
+- `GET /api/alumnos/` → lista AlumnoRead con paginación y filtros
+  - Query params:
+    - `offset` (int, default 0, >=0): desplazamiento
+    - `limit` (int, default 50, 1..100): tamaño de página
+    - `q` (string, opcional): busca por nombre, apellidos, DNI o email
 - `POST /api/alumnos/` → crea con AlumnoCreate (requiere `idColegio` válido)
 
 Esquemas (Alumno):
