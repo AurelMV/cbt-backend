@@ -25,12 +25,3 @@ class AlumnoRead(AlumnoBase):
     id: int
 
     model_config = {"from_attributes": True}
-
-
-class AlumnosPage(BaseModel):
-    items: list[AlumnoRead]
-    total: int
-    pages: int
-    limit: int
-    offset: int
-    page: int

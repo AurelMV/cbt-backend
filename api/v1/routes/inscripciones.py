@@ -8,21 +8,45 @@ from db.repositories import (
     programa_repository,
     clase_repository,
 )
-from db.repositories.alumno_repository import get as get_alumno, get_by_dni as get_alumno_by_dni
-from db.repositories.inscripcion_repository import list_all, create, get_by_alumno_and_ciclo
-from schemas.inscripcion import InscripcionCreate, InscripcionRead, InscripcionLookupRead
+from db.repositories.alumno_repository import (
+    get as get_alumno,
+    get_by_dni as get_alumno_by_dni,
+)
+from db.repositories.inscripcion_repository import (
+    list_all,
+    list_paginated,
+    create,
+    get_by_alumno_and_ciclo,
+)
+from schemas.pagination import Page
+from schemas.inscripcion import (
+    InscripcionCreate,
+    InscripcionRead,
+    InscripcionLookupRead,
+)
 
 
 router = APIRouter(prefix="/inscripciones", tags=["inscripciones"])
 
 
-@router.get("/", response_model=list[InscripcionRead])
-def get_inscripciones(session: Session = Depends(get_session)):
-    return list_all(session)
+@router.get("/", response_model=Page[InscripcionRead])
+def get_inscripciones(
+    session: Session = Depends(get_session),
+    offset: int = Query(0, ge=0),
+    limit: int = Query(15, ge=1, le=100),
+    page: int | None = Query(None, ge=0, description="Número de página (0-based)"),
+    q: str | None = Query(
+        None, description="Busca por código, estado pago o tipo pago"
+    ),
+):
+    effective_offset = offset if page is None else page * limit
+    return list_paginated(session, q=q, offset=effective_offset, limit=limit)
 
 
 @router.post("/", response_model=InscripcionRead, status_code=status.HTTP_201_CREATED)
-def create_inscripcion(payload: InscripcionCreate, session: Session = Depends(get_session)):
+def create_inscripcion(
+    payload: InscripcionCreate, session: Session = Depends(get_session)
+):
     # FK validations
     if get_alumno(session, payload.idAlumno) is None:
         raise HTTPException(status_code=404, detail="Alumno no encontrado")
@@ -40,7 +64,7 @@ def create_inscripcion(payload: InscripcionCreate, session: Session = Depends(ge
 @router.get("/buscar", response_model=InscripcionLookupRead)
 def buscar_inscripcion(
     dni: str = Query(..., description="DNI del alumno"),
-    idCiclo: int = Query(..., description="ID del ciclo"),
+    id_ciclo: int = Query(..., description="ID del ciclo", alias="idCiclo"),
     session: Session = Depends(get_session),
 ):
     """Buscar una inscripción por DNI de alumno y ciclo.
@@ -51,9 +75,11 @@ def buscar_inscripcion(
     if alumno is None:
         raise HTTPException(status_code=404, detail="Alumno no encontrado")
 
-    ins = get_by_alumno_and_ciclo(session, alumno.id, idCiclo)
+    ins = get_by_alumno_and_ciclo(session, alumno.id, id_ciclo)
     if ins is None:
-        raise HTTPException(status_code=404, detail="Inscripción no encontrada para el ciclo indicado")
+        raise HTTPException(
+            status_code=404, detail="Inscripción no encontrada para el ciclo indicado"
+        )
 
     return InscripcionLookupRead(
         idInscripcion=ins.id,

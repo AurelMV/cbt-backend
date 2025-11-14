@@ -10,8 +10,6 @@ Nota sobre trailing slash: varias rutas base están definidas con `/` final (por
 
 ---
 
-## Autenticación
-
 - Esquema: OAuth2 Password Bearer (JWT)
 - Token URL: `POST /api/auth/login`
 - El campo `username` acepta usuario o email; `password` es la contraseña.
@@ -24,14 +22,37 @@ Nota sobre trailing slash: varias rutas base están definidas con `/` final (por
    - Body (UserCreate):
      - `username`: string
      - `email`: Email
-     - `password`: string
+
+## Programas
+
+- Base: `/api/programas`
+
+1. `GET /api/programas/` → página de programas
+
+   - Query params:
+     - `offset` (int, default 0)
+     - `limit` (int, default 15)
+     - `page` (int, opcional, 0-based) sobreescribe `offset`
+     - `q` (string, opcional) busca por `nombrePrograma`
+   - Respuesta 200 (Page[ProgramaRead])
+     - `items`, `total`, `pages`, `limit`, `offset`, `page`
+
+2. `POST /api/programas/`
+
+   - Body (ProgramaCreate): { `nombrePrograma`: string }
+   - Respuesta: 201, ProgramaRead
+
+3. `PUT /api/programas/{programa_id}`
+
+   - Body (ProgramaUpdate): { `nombrePrograma`: string }
+   - Respuestas: 200 (ok) o 404 si no existe
+   - `password`: string
    - Respuesta 201 (UserRead):
-     - `id`: int
      - `username`: string
      - `email`: Email
      - `roles`: [{ `name`: string }]
 
-2. `POST /api/auth/login`
+4. `POST /api/auth/login`
    - Body (form-data):
      - `username`: string (puede ser email o username)
      - `password`: string
@@ -41,8 +62,25 @@ Nota sobre trailing slash: varias rutas base están definidas con `/` final (por
 
 Scopes/roles:
 
+## Ciclos
+
+- Base: `/api/ciclos`
+
+1. `GET /api/ciclos/` → página de ciclos
+
+   - Query: `offset`, `limit`, `page`, `q` (nombreCiclo)
+   - Respuesta: Page[CicloRead]
+
+2. `POST /api/ciclos/`
+
+   - Body (CicloCreate): { `nombreCiclo`, `fechaInicio`, `fechaFin`, `estado` }
+   - Respuesta: 201, CicloRead
+
+3. `PUT /api/ciclos/{ciclo_id}`
+   - Body (CicloUpdate)
+   - Respuestas: 200 / 404
+
 - Algunos endpoints requieren roles (scopes). Actualmente:
-  - `GET /api/users/me`: scope `user`
   - `GET /api/users/`: scope `admin`
 - El resto de routers en esta versión no exigen autenticación.
 
@@ -57,9 +95,19 @@ Scopes/roles:
    - Respuesta 200 (UserRead)
 
 2. `GET /api/users/` (protegido: scope admin)
-   - Respuesta 200: lista de UserRead
 
----
+## Grupos
+
+- Base: `/api/grupos`
+
+1. `GET /api/grupos/` → página de grupos
+
+   - Query: `offset`, `limit`, `page`, `q` (nombreGrupo)
+   - Respuesta: Page[GrupoRead]
+
+2. `POST /api/grupos/` → crea GrupoCreate
+3. `PUT /api/grupos/{grupo_id}` → actualiza (FK ciclo validada)
+   - Respuesta 200: lista de UserRead
 
 ## Programas
 
@@ -74,11 +122,16 @@ Scopes/roles:
    - Body (ProgramaCreate): { `nombrePrograma`: string }
    - Respuesta: 201, ProgramaRead
 
-3. `PUT /api/programas/{programa_id}`
-   - Body (ProgramaUpdate): { `nombrePrograma`: string }
-   - Respuestas: 200 (ok) o 404 si no existe
+## Clases
 
-Esquemas:
+- Base: `/api/clases`
+
+1. `GET /api/clases/` → página de clases (q busca `codigoClase`)
+2. `POST /api/clases/` → ClaseCreate
+3. `PUT /api/clases/{clase_id}` → ClaseUpdate (valida grupo)
+4. `PUT /api/programas/{programa_id}`
+   - Body (ProgramaUpdate): { `nombrePrograma`: string }
+     Esquemas:
 
 - ProgramaCreate/Update: { `nombrePrograma`: string }
 - ProgramaRead: { `id`: int, `nombrePrograma`: string }
@@ -89,9 +142,15 @@ Esquemas:
 
 - Base: `/api/ciclos`
 
-1. `GET /api/ciclos/`
+## Alumnos
 
-   - Respuesta: 200, lista de CicloRead
+- Base: `/api/alumnos`
+- `GET /api/alumnos/` → página (Page[AlumnoRead])
+  - Query: `offset`, `limit`, `page`, `q` (nombre/apellidos/DNI/email)
+  - Respuesta: `items`, `total`, `pages`, `limit`, `offset`, `page`
+- `POST /api/alumnos/` → AlumnoCreate (FK colegio)
+
+  - Respuesta: 200, lista de CicloRead
 
 2. `POST /api/ciclos/`
 
@@ -99,12 +158,25 @@ Esquemas:
    - Respuesta: 201, CicloRead
 
 3. `PUT /api/ciclos/{ciclo_id}`
+
+## Inscripciones
+
+- Base: `/api/inscripciones`
+
+1. `GET /api/inscripciones/` → página (Page[InscripcionRead])
+   - Query: `offset`, `limit`, `page`, `q` (Codigo/EstadoPago/TipoPago)
+2. `POST /api/inscripciones/` → InscripcionCreate (valida FKs)
+3. `GET /api/inscripciones/buscar?dni={dni}&idCiclo={id}` → búsqueda directa
    - Body (CicloUpdate): { `nombreCiclo`: string, `fechaInicio`: date, `fechaFin`: date, `estado`: bool }
    - Respuestas: 200 (ok) o 404
 
-Esquemas:
+## Pagos
 
-- CicloRead: { `id`: int, `nombreCiclo`: string, `fechaInicio`: date, `fechaFin`: date, `estado`: bool }
+- Base: `/api/pagos`
+- `GET /api/pagos/` → página (Page[PagoRead])
+  - Query: `offset`, `limit`, `page`, `q` (nroVoucher/medioPago)
+- `POST /api/pagos/` → PagoCreate (FK inscripcion)
+- Paginación: todos los listados principales (`programas`, `ciclos`, `grupos`, `clases`, `alumnos`, `inscripciones`, `pagos`) soportan `offset`, `limit`, `page` y opcional `q`. Respuesta uniforme: `Page[...]`.
 
 ---
 

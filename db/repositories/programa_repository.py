@@ -2,12 +2,24 @@ from __future__ import annotations
 from typing import List, Optional
 
 from sqlmodel import Session, select
+from core.pagination import paginate
 
 from db.models.programa import ProgramaEstudios
 
 
 def list_all(session: Session) -> List[ProgramaEstudios]:
     return session.exec(select(ProgramaEstudios)).all()
+
+
+def list_paginated(session: Session, q: Optional[str], offset: int, limit: int):
+    return paginate(
+        session,
+        ProgramaEstudios,
+        q=q,
+        columns=["nombrePrograma"],
+        offset=offset,
+        limit=limit,
+    )
 
 
 def create(session: Session, programa: ProgramaEstudios) -> ProgramaEstudios:

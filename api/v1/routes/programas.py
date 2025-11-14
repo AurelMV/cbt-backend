@@ -1,18 +1,26 @@
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, status, Query
 from sqlmodel import Session
 
 from db.base import get_session
 from db.models.programa import ProgramaEstudios
 from db.repositories import programa_repository as repo
+from schemas.pagination import Page
 from fastapi import HTTPException
 from schemas.programa import ProgramaCreate, ProgramaRead, ProgramaUpdate
 
 router = APIRouter(prefix="/programas", tags=["programas"])
 
 
-@router.get("/", response_model=list[ProgramaRead])
-async def list_programas(session: Session = Depends(get_session)):
-    return repo.list_all(session)
+@router.get("/", response_model=Page[ProgramaRead])
+async def list_programas(
+    session: Session = Depends(get_session),
+    offset: int = Query(0, ge=0),
+    limit: int = Query(15, ge=1, le=100),
+    page: int | None = Query(None, ge=0, description="Número de página (0-based)"),
+    q: str | None = Query(None, description="Busca por nombre de programa"),
+):
+    effective_offset = offset if page is None else page * limit
+    return repo.list_paginated(session, q=q, offset=effective_offset, limit=limit)
 
 
 @router.post("/", response_model=ProgramaRead, status_code=status.HTTP_201_CREATED)

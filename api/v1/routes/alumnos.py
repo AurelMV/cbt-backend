@@ -5,13 +5,14 @@ from db.base import get_session
 from db.models.enrollment import Alumno as AlumnoModel
 from db.repositories import colegio_repository
 from db.repositories.alumno_repository import list_filtered_paginated, create
-from schemas.alumno import AlumnoCreate, AlumnoRead, AlumnosPage
+from schemas.alumno import AlumnoCreate, AlumnoRead
+from schemas.pagination import Page
 
 
 router = APIRouter(prefix="/alumnos", tags=["alumnos"])
 
 
-@router.get("/", response_model=AlumnosPage)
+@router.get("/", response_model=Page[AlumnoRead])
 def get_alumnos(
     session: Session = Depends(get_session),
     offset: int = Query(0, ge=0, description="Desplazamiento para paginación"),
