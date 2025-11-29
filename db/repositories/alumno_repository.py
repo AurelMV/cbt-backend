@@ -4,6 +4,7 @@ from sqlalchemy import or_, func
 import math
 
 from db.models.enrollment import Alumno
+from db.models.location import Colegio
 
 
 def list_all(session: Session) -> List[Alumno]:
@@ -39,6 +40,8 @@ def list_filtered_paginated(
     q: Optional[str] = None,
     offset: int = 0,
     limit: int = 15,
+    sexo: Optional[str] = None,
+    id_colegio: Optional[int] = None,
 ):
     """Return paginated alumnos plus total and pages.
 
@@ -53,18 +56,51 @@ def list_filtered_paginated(
             Alumno.aMaterno.ilike(like),
             Alumno.nroDocumento.ilike(like),
             Alumno.email.ilike(like),
+            Colegio.nombreColegio.ilike(like),
         )
 
-    base_query = select(Alumno)
-    count_query = select(func.count(Alumno.id))
+    offset = max(0, offset)
+    limit = max(1, limit)
+
+    base_query = (
+        select(
+            Alumno.id.label("id"),
+            Alumno.nombreAlumno.label("nombre"),
+            Alumno.aPaterno.label("apellido_paterno"),
+            Alumno.aMaterno.label("apellido_materno"),
+            Alumno.sexo.label("sexo"),
+            Alumno.fechaNacimiento.label("fecha_nacimiento"),
+            Alumno.telefonoEstudiante.label("telefono_estudiante"),
+            Alumno.telefonoApoderado.label("telefono_apoderado"),
+            Alumno.email.label("email"),
+            Alumno.nroDocumento.label("nro_documento"),
+            Alumno.Direccion.label("direccion"),
+            Alumno.anoCulminado.label("ano_culminado"),
+            Alumno.idColegio.label("id_colegio"),
+            Colegio.nombreColegio.label("colegio"),
+        )
+        .join(Colegio, Colegio.id == Alumno.idColegio)
+    )
+    count_query = select(Alumno.id).join(Colegio, Colegio.id == Alumno.idColegio)
+
     if like_condition is not None:
         base_query = base_query.where(like_condition)
         count_query = count_query.where(like_condition)
 
-    items = session.exec(base_query.offset(max(0, offset)).limit(max(1, limit))).all()
-    total = session.exec(count_query).one()
+    if sexo:
+        base_query = base_query.where(Alumno.sexo == sexo)
+        count_query = count_query.where(Alumno.sexo == sexo)
+    if id_colegio is not None:
+        base_query = base_query.where(Colegio.id == id_colegio)
+        count_query = count_query.where(Colegio.id == id_colegio)
+
+    rows = session.exec(base_query.offset(offset).limit(limit)).all()
+    total = session.exec(
+        select(func.count()).select_from(count_query.subquery())
+    ).one()
     pages = math.ceil(total / limit) if total else 0
     page = offset // limit if limit > 0 else 0
+    items = [dict(row._mapping) for row in rows]
     return {
         "items": items,
         "total": total,

@@ -125,16 +125,24 @@ Notas de uso:
 ## Alumnos
 
 - Base: `/api/alumnos`
-- `GET /api/alumnos/` → página (Page[AlumnoRead])
+- `GET /api/alumnos/` → página (Page[AlumnoDetalleRead])
   - Query: `offset`, `limit`, `page`, `q` (nombre/apellidos/DNI/email)
   - Respuesta: `items`, `total`, `pages`, `limit`, `offset`, `page`
 - `POST /api/alumnos/` → AlumnoCreate (requiere `idColegio` válido)
+
+> **Actualización:** el listado `GET /api/alumnos/` ahora expone un modelo enriquecido (`AlumnoDetalleRead`) pensado para consumo directo en el frontend. Cada elemento incluye, además de los campos base, los siguientes datos calculados o relacionados:
+> - `edad`: se calcula con la fecha de nacimiento y la fecha actual.
+> - `telefono_estudiante`, `telefono_apoderado`, `email`, `nro_documento`.
+> - `colegio`: nombre del colegio asociado.
+> - `direccion`, `ano_culminado`, `fecha_nacimiento`.
+> - `sexo`, `nombre`, `apellido_paterno`, `apellido_materno`.
 
 Esquemas (Alumno):
 
 - Create: { `nombreAlumno`, `aMaterno`, `aPaterno`, `sexo`, `telefonoEstudiante`, `telefonoApoderado`,
   `fechaNacimiento`, `email`, `anoCulminado`, `Direccion`, `nroDocumento`, `idColegio` }
 - Read: los campos anteriores + `id`
+- Detalle (respuesta GET): `AlumnoDetalleRead` con los campos listados en la actualización.
 
 ---
 
@@ -142,19 +150,31 @@ Esquemas (Alumno):
 
 - Base: `/api/inscripciones`
 
-1. `GET /api/inscripciones/` → página (Page[InscripcionRead])
+1. `GET /api/inscripciones/` → página (Page[InscripcionDetalleRead])
    - Query: `offset`, `limit`, `page`, `q` (Codigo/EstadoPago/TipoPago)
 2. `POST /api/inscripciones/` → InscripcionCreate (valida FKs)
 3. `GET /api/inscripciones/buscar?dni={dni}&idCiclo={id}` → InscripcionLookupRead (404 si no existe)
+
+> **Actualización:** el `GET /api/inscripciones/` devuelve objetos enriquecidos (`InscripcionDetalleRead`) para front:
+> - `codigo`, `estado_pago`, `tipo_pago` del registro.
+> - `nombre`, `apellido_paterno`, `apellido_materno` del alumno.
+> - `ciclo`, `grupo`, `clase` (nombres descriptivos).
+> - `numero_pagos`: conteo de vouchers asociados.
+
 
 ---
 
 ## Pagos
 
 - Base: `/api/pagos`
-- `GET /api/pagos/` → página (Page[PagoRead])
+- `GET /api/pagos/` → página (Page[PagoDetalleRead])
   - Query: `offset`, `limit`, `page`, `q` (nroVoucher/medioPago)
 - `POST /api/pagos/` → PagoCreate (requiere `idInscripcion` válido)
+
+> **Actualización:** la respuesta `GET /api/pagos/` ahora devuelve `PagoDetalleRead` con:
+> - `codigo_pago`, `monto`, `fecha_pago`, `tipo_pago`.
+> - `nombre_estudiante`, `apellido_paterno`, `apellido_materno` asociados.
+> - `ciclo_pago`: nombre del ciclo al que pertenece la inscripción del pago.
 
 ---
 

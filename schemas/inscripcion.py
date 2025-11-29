@@ -36,3 +36,15 @@ class InscripcionLookupRead(BaseModel):
     aPaterno: str
     aMaterno: str
     Codigo: str | None = None
+
+
+class InscripcionDetalleRead(InscripcionRead):
+    nombreAlumno: str
+    aPaterno: str | None = None
+    aMaterno: str | None = None
+    nombreCiclo: str
+    nombreGrupo: str
+    codigoClase: str
+    pagosCount: int
+
+    model_config = {"from_attributes": True}

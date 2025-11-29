@@ -20,3 +20,11 @@ class PagoRead(PagoBase):
     id: int
 
     model_config = {"from_attributes": True}
+
+
+class PagoDetalleRead(PagoRead):
+    tipoPago: str | None = None
+    nombreAlumno: str
+    aPaterno: str | None = None
+    aMaterno: str | None = None
+    nombreCiclo: str

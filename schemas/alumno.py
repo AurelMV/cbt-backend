@@ -25,3 +25,8 @@ class AlumnoRead(AlumnoBase):
     id: int
 
     model_config = {"from_attributes": True}
+
+
+class AlumnoDetalleRead(AlumnoRead):
+    edad: int
+    colegioNombre: str | None = None

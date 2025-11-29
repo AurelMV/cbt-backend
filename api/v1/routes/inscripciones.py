@@ -13,8 +13,7 @@ from db.repositories.alumno_repository import (
     get_by_dni as get_alumno_by_dni,
 )
 from db.repositories.inscripcion_repository import (
-    list_all,
-    list_paginated,
+    list_paginated_with_details,
     create,
     get_by_alumno_and_ciclo,
 )
@@ -23,13 +22,14 @@ from schemas.inscripcion import (
     InscripcionCreate,
     InscripcionRead,
     InscripcionLookupRead,
+    InscripcionDetalleRead,
 )
 
 
 router = APIRouter(prefix="/inscripciones", tags=["inscripciones"])
 
 
-@router.get("/", response_model=Page[InscripcionRead])
+@router.get("/", response_model=Page[InscripcionDetalleRead])
 def get_inscripciones(
     session: Session = Depends(get_session),
     offset: int = Query(0, ge=0),
@@ -38,9 +38,22 @@ def get_inscripciones(
     q: str | None = Query(
         None, description="Busca por código, estado pago o tipo pago"
     ),
+    id_ciclo: int | None = Query(None, alias="idCiclo", ge=1),
+    id_programa: int | None = Query(None, alias="idPrograma", ge=1),
+    id_clase: int | None = Query(None, alias="idClase", ge=1),
 ):
     effective_offset = offset if page is None else page * limit
-    return list_paginated(session, q=q, offset=effective_offset, limit=limit)
+    result = list_paginated_with_details(
+        session,
+        q=q,
+        offset=effective_offset,
+        limit=limit,
+        id_ciclo=id_ciclo,
+        id_programa=id_programa,
+        id_clase=id_clase,
+    )
+    result["items"] = [InscripcionDetalleRead(**item) for item in result["items"]]
+    return result
 
 
 @router.post("/", response_model=InscripcionRead, status_code=status.HTTP_201_CREATED)
