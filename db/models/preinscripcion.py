@@ -2,6 +2,7 @@ from typing import Optional, List
 from datetime import date
 
 from sqlmodel import SQLModel, Field, Relationship
+from sqlalchemy import Text, Column
 
 
 class PreInscripcion(SQLModel, table=True):
@@ -35,7 +36,7 @@ class PrePago(SQLModel, table=True):
     monto: float
     fecha: date
     idInscripcion: int = Field(foreign_key="preinscripcion.id")
-    foto: str | None = None
+    foto: str | None = Field(default=None, sa_column=Column(Text))
     TipoPago: str
     estado: str = Field(default="pendiente")
 

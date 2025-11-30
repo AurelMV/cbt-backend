@@ -1,8 +1,11 @@
 from fastapi import APIRouter, Depends, HTTPException, status, Query
+from fastapi.responses import Response
 from sqlmodel import Session
 
 from db.base import get_session
-from db.models.enrollment import Pago as PagoModel
+from db.models.enrollment import Pago as PagoModel, Inscripcion, Alumno
+from db.models.academic import Ciclo
+from db.models.programa import ProgramaEstudios
 from db.repositories.inscripcion_repository import get as get_inscripcion
 from db.repositories.pago_repository import (
     list_paginated_with_details,
@@ -10,12 +13,56 @@ from db.repositories.pago_repository import (
 )
 from schemas.pagination import Page
 from schemas.pago import PagoCreate, PagoRead, PagoDetalleRead
+from services.pdf_service import generate_pago_pdf
 
 
 router = APIRouter(prefix="/pagos", tags=["pagos"])
 
 
+@router.get("/{id}/comprobante", response_class=Response)
+async def get_pago_comprobante(id: int, session: Session = Depends(get_session)):
+    pago = session.get(PagoModel, id)
+    if not pago:
+        raise HTTPException(status_code=404, detail="Pago no encontrado")
+    
+    inscripcion = session.get(Inscripcion, pago.idInscripcion)
+    if not inscripcion:
+        raise HTTPException(status_code=404, detail="Inscripción asociada no encontrada")
+        
+    alumno = session.get(Alumno, inscripcion.idAlumno)
+    ciclo = session.get(Ciclo, inscripcion.idCiclo)
+    programa = session.get(ProgramaEstudios, inscripcion.idPrograma)
+    
+    data = {
+        "id": pago.id,
+        "nombre": alumno.nombreAlumno if alumno else "Desconocido",
+        "paterno": alumno.aPaterno if alumno else "",
+        "materno": alumno.aMaterno if alumno else "",
+        "dni": alumno.nroDocumento if alumno else "—",
+        "ciclo": ciclo.nombreCiclo if ciclo else "—",
+        "programa": programa.nombrePrograma if programa else "—",
+        "codigo_inscripcion": inscripcion.Codigo,
+        
+        "voucher_code": pago.nroVoucher,
+        "monto": f"{pago.monto:.2f}",
+        "fecha_pago": str(pago.fecha),
+        "medio_pago": pago.medioPago,
+        "estado": "Aprobado" if pago.Estado else "Pendiente"
+    }
+    
+    try:
+        pdf_bytes = generate_pago_pdf(data, voucher_base64=pago.foto)
+    except Exception as e:
+        print(f"Error generando PDF de pago: {e}")
+        raise HTTPException(status_code=500, detail="Error generando el PDF")
+    
+    return Response(content=pdf_bytes, media_type="application/pdf", headers={
+        "Content-Disposition": f"attachment; filename=comprobante-pago-{id}.pdf"
+    })
+
+
 @router.get("/", response_model=Page[PagoDetalleRead])
+
 def get_pagos(
     session: Session = Depends(get_session),
     offset: int = Query(0, ge=0),
