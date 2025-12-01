@@ -17,6 +17,7 @@ from api.v1.routes import (
     inscripciones,
     pagos,
     bandeja,
+    reports,
 )
 from db.base import init_db
 from core.config import settings
@@ -65,5 +66,6 @@ api_router.include_router(alumnos.router)
 api_router.include_router(inscripciones.router)
 api_router.include_router(pagos.router)
 api_router.include_router(bandeja.router)
+api_router.include_router(reports.router, prefix="/reports", tags=["reports"])
 
 app.include_router(api_router)
