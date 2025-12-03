@@ -1,5 +1,6 @@
 from fastapi import FastAPI, APIRouter
 from fastapi.middleware.cors import CORSMiddleware
+from uvicorn.middleware.proxy_headers import ProxyHeadersMiddleware
 from api.v1.routes import (
     auth,
     users,
@@ -24,6 +25,10 @@ from db.base import init_db
 from core.config import settings
 
 app = FastAPI(title="CBT Backend API", version="1.0.0")
+
+# Configurar ProxyHeadersMiddleware para manejar HTTPS detrás de un proxy (Railway)
+# Esto asegura que los redirects (ej. trailing slash) usen el esquema correcto (https)
+app.add_middleware(ProxyHeadersMiddleware, trusted_hosts=["*"])
 
 # CORS configuration
 
