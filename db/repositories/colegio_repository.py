@@ -6,8 +6,11 @@ from sqlmodel import Session, select
 from db.models.location import Colegio
 
 
-def list_all(session: Session) -> List[Colegio]:
-    return session.exec(select(Colegio)).all()
+def list_all(session: Session, distrito_id: Optional[int] = None) -> List[Colegio]:
+    stmt = select(Colegio)
+    if distrito_id is not None:
+        stmt = stmt.where(Colegio.distrito_id == distrito_id)
+    return session.exec(stmt).all()
 
 
 def get(session: Session, col_id: int) -> Optional[Colegio]:

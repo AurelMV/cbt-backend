@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends, status, HTTPException
+from typing import Optional
 from sqlmodel import Session
 
 from db.base import get_session
@@ -10,8 +11,10 @@ router = APIRouter(prefix="/distritos", tags=["distritos"])
 
 
 @router.get("/", response_model=list[DistritoRead])
-async def list_distritos(session: Session = Depends(get_session)):
-    return repo.list_all(session)
+async def list_distritos(
+    provincia_id: Optional[int] = None, session: Session = Depends(get_session)
+):
+    return repo.list_all(session, provincia_id=provincia_id)
 
 
 @router.post("/", response_model=DistritoRead, status_code=status.HTTP_201_CREATED)

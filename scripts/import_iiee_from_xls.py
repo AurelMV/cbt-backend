@@ -1,7 +1,11 @@
 from __future__ import annotations
 
+import sys
 from pathlib import Path
 from typing import Optional
+
+# Add project root to sys.path so we can import from db, core, etc.
+sys.path.append(str(Path(__file__).resolve().parents[1]))
 
 import pandas as pd
 from sqlmodel import Session, select
@@ -32,7 +36,9 @@ def _pick_column(df: pd.DataFrame, candidates: list[str]) -> Optional[str]:
 
 def _get_or_create_dep(session: Session, nombre: str) -> Departamento:
     nombre = _norm(nombre)
-    dep = session.exec(select(Departamento).where(Departamento.nombreDepartamento == nombre)).first()
+    dep = session.exec(
+        select(Departamento).where(Departamento.nombreDepartamento == nombre)
+    ).first()
     if dep:
         return dep
     dep = Departamento(nombreDepartamento=nombre)
@@ -45,7 +51,10 @@ def _get_or_create_dep(session: Session, nombre: str) -> Departamento:
 def _get_or_create_prov(session: Session, nombre: str, dep: Departamento) -> Provincia:
     nombre = _norm(nombre)
     prov = session.exec(
-        select(Provincia).where((Provincia.nombreProvincia == nombre) & (Provincia.departamento_id == dep.id))
+        select(Provincia).where(
+            (Provincia.nombreProvincia == nombre)
+            & (Provincia.departamento_id == dep.id)
+        )
     ).first()
     if prov:
         return prov
@@ -59,7 +68,9 @@ def _get_or_create_prov(session: Session, nombre: str, dep: Departamento) -> Pro
 def _get_or_create_dist(session: Session, nombre: str, prov: Provincia) -> Distrito:
     nombre = _norm(nombre)
     dist = session.exec(
-        select(Distrito).where((Distrito.nombreDistrito == nombre) & (Distrito.provincia_id == prov.id))
+        select(Distrito).where(
+            (Distrito.nombreDistrito == nombre) & (Distrito.provincia_id == prov.id)
+        )
     ).first()
     if dist:
         return dist
@@ -73,7 +84,9 @@ def _get_or_create_dist(session: Session, nombre: str, prov: Provincia) -> Distr
 def _get_or_create_colegio(session: Session, nombre: str, dist: Distrito) -> Colegio:
     nombre = _norm(nombre)
     col = session.exec(
-        select(Colegio).where((Colegio.nombreColegio == nombre) & (Colegio.distrito_id == dist.id))
+        select(Colegio).where(
+            (Colegio.nombreColegio == nombre) & (Colegio.distrito_id == dist.id)
+        )
     ).first()
     if col:
         return col
@@ -141,7 +154,9 @@ def load_iiee_from_xls(xls_path: str | Path) -> dict:
         raise ValueError(f"No se encontraron columnas requeridas en el .xls: {missing}")
 
     # Normalizar y filtrar
-    df_work = df[[col_dep, col_prov, col_dist, col_nivel, col_gestion, col_nombre]].copy()
+    df_work = df[
+        [col_dep, col_prov, col_dist, col_nivel, col_gestion, col_nombre]
+    ].copy()
     df_work.columns = ["dep", "prov", "dist", "nivel", "gestion", "nombre"]
 
     df_work["nivel_norm"] = df_work["nivel"].astype(str).str.upper()
@@ -171,15 +186,33 @@ def load_iiee_from_xls(xls_path: str | Path) -> dict:
             dep = _get_or_create_dep(session, row["dep"])
             prov = _get_or_create_prov(session, row["prov"], dep)
             dist = _get_or_create_dist(session, row["dist"], prov)
-            before = session.exec(select(Colegio).where((Colegio.nombreColegio == _norm(row["nombre"])) & (Colegio.distrito_id == dist.id))).first()
+            before = session.exec(
+                select(Colegio).where(
+                    (Colegio.nombreColegio == _norm(row["nombre"]))
+                    & (Colegio.distrito_id == dist.id)
+                )
+            ).first()
             _get_or_create_colegio(session, row["nombre"], dist)
 
             # Contabilizar inserciones nuevas
-            if session.get(Departamento, dep.id) and session.exec(select(Departamento).where(Departamento.id == dep.id)).first():
+            if (
+                session.get(Departamento, dep.id)
+                and session.exec(
+                    select(Departamento).where(Departamento.id == dep.id)
+                ).first()
+            ):
                 pass
-            if session.get(Provincia, prov.id) and session.exec(select(Provincia).where(Provincia.id == prov.id)).first():
+            if (
+                session.get(Provincia, prov.id)
+                and session.exec(
+                    select(Provincia).where(Provincia.id == prov.id)
+                ).first()
+            ):
                 pass
-            if session.get(Distrito, dist.id) and session.exec(select(Distrito).where(Distrito.id == dist.id)).first():
+            if (
+                session.get(Distrito, dist.id)
+                and session.exec(select(Distrito).where(Distrito.id == dist.id)).first()
+            ):
                 pass
             if before is None:
                 counts["colegios_inserted"] += 1
