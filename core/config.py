@@ -9,6 +9,7 @@ class Config(BaseSettings):
 
     # Database URL
     DATABASE_URL: str
+    DB_ECHO: bool = False
 
     # CORS settings
     CORS_ORIGINS: list[str] = []

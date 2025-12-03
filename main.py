@@ -18,6 +18,7 @@ from api.v1.routes import (
     pagos,
     bandeja,
     reports,
+    dashboard,
 )
 from db.base import init_db
 from core.config import settings
@@ -29,9 +30,7 @@ app = FastAPI(title="CBT Backend API", version="1.0.0")
 # Permitir todos los orígenes por defecto si no se configuró CORS_ORIGINS en .env
 _allow_origins = settings.CORS_ORIGINS or ["*"]
 # La combinación "*" + credentials=True no es válida según el estándar; si se usa "*", forzamos credentials=False
-_allow_credentials = (
-    settings.CORS_ALLOW_CREDENTIALS and _allow_origins != ["*"]
-)
+_allow_credentials = settings.CORS_ALLOW_CREDENTIALS and _allow_origins != ["*"]
 
 app.add_middleware(
     CORSMiddleware,
@@ -67,5 +66,6 @@ api_router.include_router(inscripciones.router)
 api_router.include_router(pagos.router)
 api_router.include_router(bandeja.router)
 api_router.include_router(reports.router, prefix="/reports", tags=["reports"])
+api_router.include_router(dashboard.router, prefix="/dashboard", tags=["dashboard"])
 
 app.include_router(api_router)

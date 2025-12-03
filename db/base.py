@@ -13,9 +13,10 @@ connect_args = {}
 if DATABASE_URL.startswith("sqlite"):
     connect_args = {"check_same_thread": False}
 
-engine = create_engine(DATABASE_URL, echo=True, connect_args=connect_args)
+engine = create_engine(DATABASE_URL, echo=settings.DB_ECHO, connect_args=connect_args)
 
 if DATABASE_URL.startswith("sqlite"):
+
     @event.listens_for(Engine, "connect")
     def set_sqlite_pragma(dbapi_connection, connection_record):
         cursor = dbapi_connection.cursor()
