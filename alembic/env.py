@@ -12,7 +12,13 @@ sys.path.append(str(Path(__file__).resolve().parents[1]))
 
 from core.config import Config  # noqa: E402
 from sqlmodel import SQLModel  # noqa: E402
-import db.models.user  # noqa: F401,E402  # ensure models are imported so metadata is populated
+# ensure models are imported so metadata is populated
+import db.models.user  # noqa: F401,E402
+import db.models.academic  # noqa: F401,E402
+import db.models.location  # noqa: F401,E402
+import db.models.programa  # noqa: F401,E402
+import db.models.preinscripcion  # noqa: F401,E402
+import db.models.enrollment  # noqa: F401,E402
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.

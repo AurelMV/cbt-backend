@@ -169,4 +169,26 @@ http://127.0.0.1:8000/docs
 
 ---
 
+## Datos demo: inscripciones y pagos
+
+Para poblar rápidamente datos de prueba en las tablas `inscripcion` y `pago`, puedes usar el script:
+
+- `scripts/seed_inscripciones_pagos.py`: inserta 50 inscripciones y 50 pagos asociados. El script crea, si faltan, los datos base requeridos: ubicación (DEP/PROV/DIST/Colegio demo), un Programa de Estudios, un Ciclo con su Grupo y Clase, y 50 alumnos.
+
+Ejecución desde PowerShell (Windows):
+
+```powershell
+./.venv/Scripts/python.exe -m scripts.seed_inscripciones_pagos
+```
+
+El script imprime un resumen como:
+
+```
+Seeding completado: {"inscripciones_creadas": 50, "pagos_creados": 50, "inscripciones_demo_totales": 50, "pagos_demo_totales": 50}
+```
+
+Notas:
+- No borra datos existentes; añade registros con prefijos `INS-DEMO-` y `VCH-DEMO-` para poder identificarlos fácilmente.
+- Si necesitas una cantidad distinta, puedes editar la llamada en el `if __name__ == "__main__":` del script y ajustar el número.
+
 ¡Feliz desarrollo! Si algo no queda claro en este README, abre un issue o avisa al equipo para mejorarlo.
