@@ -1,6 +1,7 @@
 from fastapi import FastAPI, APIRouter
 from fastapi.middleware.cors import CORSMiddleware
 from uvicorn.middleware.proxy_headers import ProxyHeadersMiddleware
+from fastapi.staticfiles import StaticFiles
 from api.v1.routes import (
     auth,
     users,
@@ -20,11 +21,15 @@ from api.v1.routes import (
     bandeja,
     reports,
     dashboard,
+    publicity,
 )
 from db.base import init_db
 from core.config import settings
 
 app = FastAPI(title="CBT Backend API", version="1.0.0")
+
+# Mount static files
+app.mount("/static", StaticFiles(directory="static"), name="static")
 
 # Configurar ProxyHeadersMiddleware para manejar HTTPS detrás de un proxy (Railway)
 # Esto asegura que los redirects (ej. trailing slash) usen el esquema correcto (https)
@@ -72,5 +77,8 @@ api_router.include_router(pagos.router)
 api_router.include_router(bandeja.router)
 api_router.include_router(reports.router, prefix="/reports", tags=["reports"])
 api_router.include_router(dashboard.router, prefix="/dashboard", tags=["dashboard"])
+api_router.include_router(publicity.router)
+
+app.include_router(api_router)
 
 app.include_router(api_router)
