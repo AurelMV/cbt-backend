@@ -5,7 +5,7 @@ from fastapi import HTTPException, status
 from sqlmodel import Session
 
 from core.security import hash_password, verify_password, create_access_token
-from schemas.user import UserCreate
+from schemas.user import UserCreate, UserUpdate
 from db.models.user import User
 from db.repositories import user_repository as users_repo
 from db.repositories import role_repository as roles_repo
@@ -61,3 +61,27 @@ def login_user(session: Session, identifier: str, password: str) -> Dict[str, st
     roles = [role.name for role in user.roles]
     access_token = create_access_token(data={"sub": user.username, "roles": roles})
     return {"access_token": access_token, "token_type": "bearer"}
+
+
+def update_user(session: Session, user: User, data: UserUpdate) -> User:
+    if data.username is not None:
+        # Check if username is taken by another user
+        existing = users_repo.get_by_username(session, data.username)
+        if existing and existing.id != user.id:
+            raise HTTPException(status_code=400, detail="Username already taken")
+        user.username = data.username
+    
+    if data.email is not None:
+        # Check if email is taken by another user
+        existing = users_repo.get_by_email(session, data.email)
+        if existing and existing.id != user.id:
+            raise HTTPException(status_code=400, detail="Email already taken")
+        user.email = data.email
+    
+    if data.password is not None:
+        user.hashed_password = hash_password(data.password)
+    
+    session.add(user)
+    session.commit()
+    session.refresh(user)
+    return user
